@@ -5,6 +5,8 @@ import com.koriebruh.demoreactivenw.dto.ApiResponseFactory;
 import com.koriebruh.demoreactivenw.dto.request.CategoryRequest;
 import com.koriebruh.demoreactivenw.dto.response.CategoryResponse;
 import com.koriebruh.demoreactivenw.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
+@Tag(name = "Category Management", description = "Endpoints for managing product categories")
 public class CategoryController {
 
 
@@ -30,6 +33,7 @@ public class CategoryController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create a new category", description = "Add a new unique category to the system")
     public Mono<ApiResponse<CategoryResponse>> created(
             @RequestBody @Validated CategoryRequest request
     ) {
@@ -46,6 +50,7 @@ public class CategoryController {
             produces = MediaType.APPLICATION_JSON_VALUE,
             value = "/{id}"
     )
+    @Operation(summary = "Get category by ID")
     public Mono<ApiResponse<CategoryResponse>> getById(
             @PathVariable Long id
     ) {
@@ -61,6 +66,7 @@ public class CategoryController {
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Get all categories", description = "Retrieve a list of all available categories")
     public Mono<ApiResponse<List<CategoryResponse>>> getAll() {
         return categoryService.getAll()
                 .collectList() // Ubah Flux<CategoryResponse> jadi Mono<List<CategoryResponse>>
@@ -75,6 +81,7 @@ public class CategoryController {
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Update a category")
     public Mono<ApiResponse<CategoryResponse>> update(
             @PathVariable Long id,
             @RequestBody @Validated CategoryRequest request
@@ -88,6 +95,7 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete a category", description = "Remove a category if it's not associated with any products")
     public Mono<Void> delete(@PathVariable Long id) {
         return categoryService.delete(id);
     }

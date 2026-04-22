@@ -6,6 +6,8 @@ import com.koriebruh.demoreactivenw.dto.request.ProductRequest;
 import com.koriebruh.demoreactivenw.dto.response.ProductPageResponse;
 import com.koriebruh.demoreactivenw.dto.response.ProductResponse;
 import com.koriebruh.demoreactivenw.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,11 +18,11 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/products")
+@Tag(name = "Product Management", description = "Endpoints for managing products with dynamic filtering and pagination")
 public class ProductController {
     private final ProductService productService;
     private final ApiResponseFactory responseFactory;
@@ -30,6 +32,7 @@ public class ProductController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create a new product", description = "Add a new product with category association")
     public Mono<ApiResponse<ProductResponse>> create(
             @RequestBody @Validated ProductRequest request
     ) {
@@ -41,6 +44,7 @@ public class ProductController {
             value = "/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Get product by ID", description = "Fetch product details along with its category information")
     public Mono<ApiResponse<ProductResponse>> getById(@PathVariable Long id) {
         return productService.getById(id)
                 .map(res -> responseFactory.success("Product found", res));
@@ -51,6 +55,7 @@ public class ProductController {
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Update an existing product")
     public Mono<ApiResponse<ProductResponse>> update(
             @PathVariable Long id,
             @RequestBody @Validated ProductRequest request
@@ -61,11 +66,18 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Hard delete a product")
     public Mono<Void> delete(@PathVariable Long id) {
         return productService.delete(id);
     }
 
-    @GetMapping
+    @GetMapping(
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            summary = "Get all products (Paginated & Filtered)",
+            description = "Fetch products with optional filters for name, category, stock, and price range."
+    )
     public Mono<ApiResponse<ProductPageResponse>> getAll(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long categoryId,
