@@ -1,0 +1,47 @@
+services:
+
+  # -----------------------------------------------------------------------
+  # APPLICATION SERVICE
+  # -----------------------------------------------------------------------
+  demo-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: demo-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env                         # ← otomatis load semua variable dari .env
+    depends_on:
+      mysql-template-demo:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+
+  # -----------------------------------------------------------------------
+  # MYSQL SERVICE
+  # -----------------------------------------------------------------------
+  mysql-template-demo:
+    image: mysql:8.0.37
+    container_name: mysql-template-demo
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mysql_data:

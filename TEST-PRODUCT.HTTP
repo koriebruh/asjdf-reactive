@@ -1,0 +1,63 @@
+### Variables
+@hostname = localhost
+@port = 8080
+@baseUrl = http://{{hostname}}:{{port}}/api/v1/products
+
+### 1. Create Product (Elektronik - Laptop)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "name": "Macbook Pro M3",
+  "description": "Apple M3 Chip, 16GB RAM, 512GB SSD",
+  "price": 25000000,
+  "stock": 10,
+  "sku": "LAP-MAC-M3-01",
+  "category_id": 1
+}
+
+### 2. Create Product (Elektronik - Smartphone)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "name": "iPhone 15 Pro",
+  "description": "Titanium design, A17 Pro chip",
+  "price": 20000000,
+  "stock": 25,
+  "sku": "PHN-IPH-15P",
+  "category_id": 1
+}
+
+### 3. Get All Products (Default Paging: Page 0, Size 10)
+GET {{baseUrl}}
+Accept: application/json
+
+### 4. Get Products with Custom Paging (Page 0, Size 2)
+GET {{baseUrl}}?page=0&size=2
+Accept: application/json
+
+### 5. Get Product By ID
+# Ganti angka 1 dengan ID yang muncul di response Create/Get All
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 6. Update Product
+PATCH {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "name": "Macbook Pro M3 Max",
+  "description": "Updated: Apple M3 Max Chip, 32GB RAM",
+  "price": 45000000,
+  "stock": 5,
+  "sku": "LAP-MAC-M3-MAX",
+  "categoryId": 1
+}
+
+### 7. Delete Product
+DELETE {{baseUrl}}/1
+
+### 8. Get Product By ID (After Delete - Should 404)
+GET {{baseUrl}}/1
+Accept: application/json

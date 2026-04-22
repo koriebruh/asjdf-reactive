@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: demo-reactive-nw
+    version: 0.0.1-SNAPSHOT
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+  # DATA BASE
+  r2dbc:
+    url: r2dbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      validation-query: SELECT 1
+
+  flyway:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Jakarta
+    user: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    enabled: true
+
+logging:
+  level:
+    root: WARN
+    com.koriebruh.accountservice: INFO
+    org.springframework: WARN
+    io.r2dbc: WARN
+    org.flywaydb: INFO
+
+# -----------------------------------------------------------------------
+# CONFIGURATION FOR ACTUATOR METRICS AND HEALTH CHECKS
+# -----------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: when-authorized

@@ -1,0 +1,44 @@
+### Variables
+@hostname = localhost
+@port = 8080
+@baseUrl = http://{{hostname}}:{{port}}/api/v1/categories
+
+### 1. Create Category (Success)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "name": "Electronics"
+}
+
+### 2. Create Category (Duplicate Name - Should Error)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "name": "ElectronicsXX"
+}
+
+### 3. Get All Categories
+GET {{baseUrl}}
+Accept: application/json
+
+### 4. Get Category By ID
+# Ganti angka 1 dengan ID yang ada di database kamu
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 5. Update Category (Patch)
+PATCH {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "name": "Gadgets Electronics"
+}
+
+### 6. Delete Category (Success if no products)
+DELETE {{baseUrl}}/4
+
+### 7. Delete Category (Should Error if used by products)
+# Pastikan ID ini sedang dipakai oleh data di tabel products
+DELETE {{baseUrl}}/2
