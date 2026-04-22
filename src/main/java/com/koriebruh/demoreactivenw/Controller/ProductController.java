@@ -8,12 +8,14 @@ import com.koriebruh.demoreactivenw.dto.response.ProductResponse;
 import com.koriebruh.demoreactivenw.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -65,10 +67,23 @@ public class ProductController {
 
     @GetMapping
     public Mono<ApiResponse<ProductPageResponse>> getAll(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Integer minStock,
+            @RequestParam(required = false) Integer maxStock,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,desc") String sort
     ) {
-        return productService.getAllWithPaging(PageRequest.of(page, size))
-                .map(res -> responseFactory.success("Products fetched", res));
+        String[] sortParts = sort.split(",");
+        Sort sortOrder = Sort.by(Sort.Direction.fromString(sortParts[1]), sortParts[0]);
+
+        return productService.getAllWithPaging(
+                name, categoryId, minStock,maxStock, minPrice, maxPrice,
+                PageRequest.of(page, size, sortOrder)
+        ).map(res -> responseFactory.success("Successfully fetched products", res));
     }
+
 }

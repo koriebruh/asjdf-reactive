@@ -11,10 +11,14 @@ import com.koriebruh.demoreactivenw.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -24,6 +28,8 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     private final CategoryRepository categoryRepository;
+
+    private final R2dbcEntityTemplate template;
 
     public Mono<ProductResponse> create(ProductRequest request) {
         log.info("Creating product: {}", request.getName());
@@ -73,11 +79,55 @@ public class ProductService {
                 .doOnSuccess(res -> log.info("Product updated: {}", res.getId()));
     }
 
-    public Mono<ProductPageResponse> getAllWithPaging(Pageable pageable) {
-        return productRepository.findAllBy(pageable)
-                .flatMap(this::enrichWithCategory)
+    public Mono<ProductPageResponse> getAllWithPaging(
+            String name,
+            Long categoryId,
+            Integer minStock,
+            Integer maxStock,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Pageable pageable
+    ) {
+        log.info("Fetching products with dynamic filters");
+
+        // 1. Bangun kriteria pencarian secara dinamis
+        Criteria criteria = Criteria.empty();
+
+        if (name != null && !name.isBlank()) {
+            criteria = criteria.and("name").like("%" + name + "%");
+        }
+        if (categoryId != null) {
+            criteria = criteria.and("category_id").is(categoryId);
+        }
+        if (minStock != null) {
+            criteria = criteria.and("stock").greaterThanOrEquals(minStock);
+        }
+        if (minPrice != null) {
+            criteria = criteria.and("price").greaterThanOrEquals(minPrice);
+        }
+        if (maxPrice != null) {
+            criteria = criteria.and("price").lessThanOrEquals(maxPrice);
+        }
+        if (minStock != null) {
+            criteria = criteria.and("stock").greaterThanOrEquals(minStock);
+        }
+        // TAMBAHKAN INI: Untuk filter stok hampir habis
+        if (maxStock != null) {
+            criteria = criteria.and("stock").lessThanOrEquals(maxStock);
+        }
+
+
+        // 2. Bungkus kriteria ke dalam Query (termasuk paging & sorting)
+        Query query = Query.query(criteria).with(pageable);
+
+        // 3. Eksekusi: Ambil data dan Hitung total secara bersamaan (Parallel)
+        return template.select(Product.class)
+                .from("products")
+                .matching(query)
+                .all()
+                .flatMap(this::enrichWithCategory) // Tempelkan data kategori
                 .collectList()
-                .zipWith(productRepository.count())
+                .zipWith(template.count(Query.query(criteria), Product.class))
                 .map(tuple -> {
                     List<ProductResponse> content = tuple.getT1();
                     Long totalElements = tuple.getT2();

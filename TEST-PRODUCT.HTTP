@@ -37,6 +37,9 @@ Accept: application/json
 GET {{baseUrl}}?page=0&size=2
 Accept: application/json
 
+### B. Ambil produk KHUSUS kategori Gadgets (ID: 1)
+GET {{baseUrl}}?categoryId=1&page=0&size=10
+
 ### 5. Get Product By ID
 # Ganti angka 1 dengan ID yang muncul di response Create/Get All
 GET {{baseUrl}}/1

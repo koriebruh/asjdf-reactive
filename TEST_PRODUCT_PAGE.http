@@ -1,0 +1,35 @@
+### Variables
+@hostname = localhost
+@port = 8080
+@baseUrl = http://{{hostname}}:{{port}}/api/v1/products
+
+### 1. Ambil Semua Produk (Default: Page 0, Size 10, Sort ID Desc)
+GET {{baseUrl}}
+Accept: application/json
+
+### 2. Cari Produk Berdasarkan Nama (Search)
+GET {{baseUrl}}?name=Macbook
+Accept: application/json
+
+### 3. Filter Berdasarkan Kategori dan Minimal Stok
+GET {{baseUrl}}?categoryId=1&minStock=5
+Accept: application/json
+
+### 4. Filter Rentang Harga (Min & Max Price)
+GET {{baseUrl}}?minPrice=10000000&maxPrice=30000000
+Accept: application/json
+
+### 5. Kombinasi Super: Nama, Stok, dan Harga + Sorting Custom
+# Mencari "iPhone" yang stok > 0, harga > 5jt, urutkan dari harga TERMAHAL (desc)
+GET {{baseUrl}}?name=iPhone&minStock=1&minPrice=5000000&sort=price,desc
+Accept: application/json
+
+### 6. Paging: Ambil Halaman ke-2 dengan Size 5, urutkan Nama A-Z (asc)
+GET {{baseUrl}}?page=1&size=5&sort=name,asc
+Accept: application/json
+
+### 7. Filter Produk yang Stoknya Hampir Habis (Stock < 5)
+# Catatan: Karena kita pakai greaterThanOrEquals di service untuk minStock,
+# untuk filter 'hampir habis' kamu bisa modifikasi logic Criteria di Service nanti.
+GET {{baseUrl}}?maxStock=100
+Accept: application/json

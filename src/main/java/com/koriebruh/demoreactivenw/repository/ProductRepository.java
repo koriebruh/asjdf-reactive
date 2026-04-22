@@ -8,11 +8,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-
 @Repository
 public interface ProductRepository extends R2dbcRepository<Product, Long> {
 
-    Mono<Boolean> existsByCategoryId(Long categoryId);
+    Mono<Long> count();
 
-    Flux<Product> findAllBy(Pageable pageable);
+    Mono<Boolean> existsByCategoryId(Long categoryId);
 }
